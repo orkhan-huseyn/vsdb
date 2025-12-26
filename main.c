@@ -26,6 +26,10 @@ typedef struct {
   char email[COLUMN_EMAIL_SIZE];
 } Row;
 
+void print_row(Row *row) {
+  printf("(%d, %s, %s)\n", row->id, row->username, row->email);
+}
+
 typedef struct {
   uint32_t num_rows;
   void *pages[TABLE_MAX_PAGES];
@@ -151,13 +155,22 @@ void execute_insert(Statement *statement, Table *table) {
   table->num_rows++;
 }
 
+void execute_select(Statement *statement, Table *table) {
+  Row row;
+  for (uint32_t i = 0; i < table->num_rows; i++) {
+    void *row_position = find_row_slot(table, i);
+    deserialize_row(row_position, &row);
+    print_row(&row);
+  }
+}
+
 void execute_statement(Statement *statement, Table *table) {
   switch (statement->type) {
   case STATEMENT_INSERT:
     execute_insert(statement, table);
     break;
   case STATEMENT_SELECT:
-    printf("TODO: execute select statement \n");
+    execute_select(statement, table);
     break;
   }
 }
