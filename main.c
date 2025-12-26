@@ -145,6 +145,8 @@ int main(int argc, char *argv[]) {
     PrepareResult result = set_statement_type(input_buffer, &statement);
     if (result == PREPARE_UNRECOGNIZED_STATEMENT) {
       printf("Unrecognized keyword at start of '%s'.\n", input_buffer->buffer);
+    } else if (result == PREPARE_SYNTAX_ERROR) {
+      printf("Syntax error. Could not parse statement.\n");
     } else {
       execute_statement(&statement);
       printf("Executed.\n");
