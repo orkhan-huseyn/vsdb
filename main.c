@@ -93,6 +93,22 @@ void *find_row_slot(Table *table, uint32_t row_num) {
   return target_page + byte_offset;
 }
 
+Table *new_table() {
+  Table *table = (Table *)malloc(sizeof(Table));
+  table->num_rows = 0;
+  for (uint32_t i = 0; i < TABLE_MAX_PAGES; i++) {
+    table->pages[i] = NULL;
+  }
+  return table;
+}
+
+void free_table(Table *table) {
+  for (uint32_t i = 0; table->pages[i]; i++) {
+    free(table->pages[i]);
+  }
+  free(table);
+}
+
 MetaCommandResult get_meta_command(InputBuffer *input_buffer) {
   if (strcmp(input_buffer->buffer, ".exit") == 0) {
     close_input_buffer(input_buffer);
