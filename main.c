@@ -109,9 +109,10 @@ void free_table(Table *table) {
   free(table);
 }
 
-MetaCommandResult get_meta_command(InputBuffer *input_buffer) {
+MetaCommandResult get_meta_command(InputBuffer *input_buffer, Table *table) {
   if (strcmp(input_buffer->buffer, ".exit") == 0) {
     close_input_buffer(input_buffer);
+    free_table(table);
     exit(EXIT_SUCCESS);
   }
   return META_COMMAND_UNRECOGNIZED_COMMAND;
@@ -139,10 +140,21 @@ PrepareResult set_statement_type(InputBuffer *input_buffer,
   return PREPARE_UNRECOGNIZED_STATEMENT;
 }
 
-void execute_statement(Statement *statement) {
+void execute_insert(Statement *statement, Table *table) {
+  if (table->num_rows >= TABLE_MAX_ROWS) {
+    printf("Maximum table size reached.\n");
+    return;
+  }
+  Row *row_to_insert = &(statement->row_to_insert);
+  void *row_position = find_row_slot(table, table->num_rows);
+  serialize_row(row_to_insert, row_position);
+  table->num_rows++;
+}
+
+void execute_statement(Statement *statement, Table *table) {
   switch (statement->type) {
   case STATEMENT_INSERT:
-    printf("TODO: execute insert statement \n");
+    execute_insert(statement, table);
     break;
   case STATEMENT_SELECT:
     printf("TODO: execute select statement \n");
@@ -165,13 +177,14 @@ void read_input(InputBuffer *input_buffer) {
 }
 
 int main(int argc, char *argv[]) {
+  Table *table = new_table();
   InputBuffer *input_buffer = new_input_buffer();
   while (true) {
     print_prompt();
     read_input(input_buffer);
 
     if (input_buffer->buffer[0] == '.') {
-      switch (get_meta_command(input_buffer)) {
+      switch (get_meta_command(input_buffer, table)) {
       case META_COMMAND_SUCCESS:
         continue;
       case META_COMMAND_UNRECOGNIZED_COMMAND:
@@ -187,7 +200,7 @@ int main(int argc, char *argv[]) {
     } else if (result == PREPARE_SYNTAX_ERROR) {
       printf("Syntax error. Could not parse statement.\n");
     } else {
-      execute_statement(&statement);
+      execute_statement(&statement, table);
       printf("Executed.\n");
     }
   }
