@@ -120,6 +120,8 @@ void *get_page(Pager *pager, uint32_t page_num) {
         exit(EXIT_FAILURE);
       }
     }
+
+    pager->pages[page_num] = page;
   }
 
   return pager->pages[page_num];
