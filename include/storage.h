@@ -9,18 +9,21 @@ extern const uint32_t PAGE_SIZE;
 extern const uint32_t ROWS_PER_PAGE;
 extern const uint32_t TABLE_MAX_ROWS;
 
-typedef struct {
+typedef struct
+{
     int file_descriptor;
     uint32_t file_length;
     void *pages[TABLE_MAX_PAGES];
 } Pager;
 
-typedef struct {
+typedef struct
+{
     Pager *pager;
     uint32_t num_rows;
 } Table;
 
-typedef struct {
+typedef struct
+{
     Table *table;
     uint32_t row_num;
     bool end_of_table;

@@ -1,19 +1,22 @@
 #include "statement.h"
 #include <string.h>
 
-PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement)
+PrepareResult prepare_insert(InputBuffer *input_buffer, Statement *statement)
 {
     statement->type = STATEMENT_INSERT;
     strtok(input_buffer->buffer, " ");
-    char* id_string = strtok(NULL, " ");
-    char* username = strtok(NULL, " ");
-    char* email = strtok(NULL, " ");
+    char *id_string = strtok(NULL, " ");
+    char *username = strtok(NULL, " ");
+    char *email = strtok(NULL, " ");
 
-    if (id_string == NULL || username == NULL || email == NULL) return PREPARE_SYNTAX_ERROR;
+    if (id_string == NULL || username == NULL || email == NULL)
+        return PREPARE_SYNTAX_ERROR;
 
     int id = atoi(id_string);
-    if (id < 0) return PREPARE_NEGATIVE_ID;
-    if (strlen(username) > COLUMN_USERNAME_SIZE || strlen(email) > COLUMN_EMAIL_SIZE) return PREPARE_STRING_TOO_LONG;
+    if (id < 0)
+        return PREPARE_NEGATIVE_ID;
+    if (strlen(username) > COLUMN_USERNAME_SIZE || strlen(email) > COLUMN_EMAIL_SIZE)
+        return PREPARE_STRING_TOO_LONG;
 
     statement->row_to_insert.id = id;
     strcpy(statement->row_to_insert.username, username);
@@ -21,9 +24,10 @@ PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement)
     return PREPARE_SUCCESS;
 }
 
-PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement)
+PrepareResult prepare_statement(InputBuffer *input_buffer, Statement *statement)
 {
-    if (strncmp(input_buffer->buffer, "insert", 6) == 0) return prepare_insert(input_buffer, statement);
+    if (strncmp(input_buffer->buffer, "insert", 6) == 0)
+        return prepare_insert(input_buffer, statement);
     if (strcmp(input_buffer->buffer, "select") == 0)
     {
         statement->type = STATEMENT_SELECT;
@@ -32,7 +36,7 @@ PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement)
     return PREPARE_UNRECOGNIZED_STATEMENT;
 }
 
-void execute_statement(Statement* statement, Table* table)
+void execute_statement(Statement *statement, Table *table)
 {
     if (statement->type == STATEMENT_INSERT)
     {
@@ -41,14 +45,14 @@ void execute_statement(Statement* statement, Table* table)
             printf("Error: Table full.\n");
             return;
         }
-        Cursor* cursor = table_end(table);
+        Cursor *cursor = table_end(table);
         serialize_row(&(statement->row_to_insert), cursor_value(cursor));
         table->num_rows++;
         free(cursor);
     }
     else
     {
-        Cursor* cursor = table_start(table);
+        Cursor *cursor = table_start(table);
         Row row;
         while (!(cursor->end_of_table))
         {

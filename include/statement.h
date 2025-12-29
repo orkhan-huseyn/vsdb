@@ -6,7 +6,8 @@
 #include "storage.h"
 #include "input_buffer.h"
 
-typedef struct {
+typedef struct
+{
   StatementType type;
   Row row_to_insert;
 } Statement;
