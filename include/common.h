@@ -23,6 +23,13 @@ typedef enum
 
 typedef enum
 {
+    EXECUTE_SUCCESS,
+    EXECUTE_TABLE_FULL,
+    EXECUTE_DUPLICATE_KEY,
+} ExecuteResult;
+
+typedef enum
+{
     STATEMENT_INSERT,
     STATEMENT_SELECT
 } StatementType;

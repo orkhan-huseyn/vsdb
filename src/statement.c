@@ -36,30 +36,40 @@ PrepareResult prepare_statement(InputBuffer *input_buffer, Statement *statement)
     return PREPARE_UNRECOGNIZED_STATEMENT;
 }
 
-void execute_statement(Statement *statement, Table *table)
+ExecuteResult execute_insert(Statement *statement, Table *table)
 {
-    if (statement->type == STATEMENT_INSERT)
+    if (table->num_rows >= TABLE_MAX_ROWS)
     {
-        if (table->num_rows >= TABLE_MAX_ROWS)
-        {
-            printf("Error: Table full.\n");
-            return;
-        }
-        Cursor *cursor = table_end(table);
-        serialize_row(&(statement->row_to_insert), cursor_value(cursor));
-        table->num_rows++;
-        free(cursor);
+        return EXECUTE_TABLE_FULL;
     }
-    else
+    Cursor *cursor = table_end(table);
+    serialize_row(&(statement->row_to_insert), cursor_value(cursor));
+    table->num_rows++;
+    free(cursor);
+    return EXECUTE_SUCCESS;
+}
+
+ExecuteResult execute_select(Statement *statement, Table *table)
+{
+    Cursor *cursor = table_start(table);
+    Row row;
+    while (!(cursor->end_of_table))
     {
-        Cursor *cursor = table_start(table);
-        Row row;
-        while (!(cursor->end_of_table))
-        {
-            deserialize_row(cursor_value(cursor), &row);
-            print_row(&row);
-            cursor_advance(cursor);
-        }
-        free(cursor);
+        deserialize_row(cursor_value(cursor), &row);
+        print_row(&row);
+        cursor_advance(cursor);
+    }
+    free(cursor);
+    return EXECUTE_SUCCESS;
+}
+
+ExecuteResult execute_statement(Statement *statement, Table *table)
+{
+    switch (statement->type)
+    {
+    case STATEMENT_INSERT:
+        return execute_insert(statement, table);
+    case STATEMENT_SELECT:
+        return execute_select(statement, table);
     }
 }
